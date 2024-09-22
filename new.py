@@ -1,136 +1,3 @@
-<<<<<<< HEAD
-import os
-import csv
-
-# Specify the directory containing the CSV files
-directory = "/Users/filiphendl/Desktop/339_F2024/SI339D2/"
-
-# List all files in the directory and its subdirectories
-csv_files = []
-
-for root, dirs, files in os.walk(directory):
-    for file in files:
-        if file.endswith('.csv'):
-            csv_files.append(os.path.join(root, file))
-
-print("CSV Files in Directory and Subdirectories:", csv_files)
-
-# Check if there are any CSV files in the directory
-if not csv_files:
-    print("No CSV files found in the directory and its subdirectories.")
-    exit()  # Exit the script if no CSV files are found
-
-# Select the first CSV file in the list for processing
-csv_file = csv_files[0]
-print(f"Processing CSV File: {csv_file}")
-
-
-
-# Open the CSV file and extract the data
-with open(csv_files, newline='', encoding='utf-8') as file:
-   reader = csv.reader(file)
-   data = list(reader)
-   print(data[0])
-
-
-# Extract the data from the CSV
-meet_name = data[1][0]  # Column A - h1 (Meet Name)
-meet_date = data[1][1]  # Column B - h2 (Meet Date)
-team_results_link = data[1][2]  # Column C - hyperlink for the team-results section
-folder_name = data[1][3]  # Column D - folder name used in photo-gallery links
-race_comments = data[1][4]  # Column E - race-comments section
-
-
-print(f"meet name {meet_name}")
-print(f"meet_date {meet_date}")
-print(f"folder_name {folder_name}")
-print(f"race_comments{race_comments}")
-
-
-# Athlete details start from row 2 (index 1)
-athletes = data[1:]
-
-
-# Start building the HTML structure
-html_content = f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel = "stylesheet" href = "css/reset.css">
-   <link rel = "stylesheet" href = "css/style.css">
-   <title>{meet_name} Country Meet</title>
-</head>
-<body>
-   <header>
-       <h1>{meet_name}</h1>
-       <h2>{meet_date}</h2>
-   </header>
-'''
-html_content += f'''
-    <section id= "team-results">
-        <h2>Overall Team Results</h2>
-        <p><a href="{team_results_link}">Team results are available here.</a></p>
-    </section>
-'''
-        
-html_content += '''
-    <section id= "athlete-results">
-        <h2>Athlete Results</h2>
-        <table id = "athlete-table">
-            <thead>
-                </tr>
-                    <th>Name</th>
-                    <th>Time</th>
-                    <th>Place</th>
-                    <th>Image</th>
-                    <th>Feedback</th>
-                </tr>
-            </thead>
-            <tbody>
-            
-'''
-for athlete in athletes:
-    athlete_name = athlete[5]
-    athlete_place = athlete[7] #add corrisponding numbers where they should go 
-    athlete_time = athlete[8]
-    athlete_image = athlete[6]
-    athlete_feedback = athlete[9]
-
-
-    html_content += f'''
-                <tr>
-                    <td>{athlete_name}</td>
-                    <td>{athlete_time}</td>
-                    <td>{athlete_place}</td>
-                    <td><img src="images/{athlete_image}" alt="{athlete_name}" width="100"></td>
-                    <td>{athlete_feedback}</td>
-                </tr>
-    '''
-
-# clsing the table of athlete section 
-
-html_content += '''
-            </tbody>
-        </table>
-    </section>
-'''
-
-# adding a footer section
-html_content += f'''
-    <footer>
-        <p>Coach Comments: {race_comments}</p>
-    </footer>
-</body>
-</html>
-'''
-
-output_file = "LamplighterInvite23.html"
-with open(output_file, 'w', encoding ='utf-8') as file:
-    file.write(html_content)
-
-print(f"HTML file {output_file} created successfully.")
-=======
 # HTML template
 html_main = '''<!DOCTYPE html>
 <html lang="en">
@@ -146,6 +13,11 @@ html_main = '''<!DOCTYPE html>
     <section id="meetList">
         <h2>Meets</h2>
         <table id="meet-table">
+        <thead>
+            <tr>
+                <th>Meet Name</th>
+            </tr>
+        </thead>
             <tbody>
                 {meet_rows}
             </tbody>
@@ -177,6 +49,19 @@ html_main = '''<!DOCTYPE html>
                 {mens_rows}
             </tbody>
         </table>
+    </section>
+    <section id="Meet-Photos">
+        <h2>Photos</h2>
+            <table id="photo-table">  
+                <thead>
+                    <tr>
+                        <th>Meet Name</th>
+                    </tr>
+                </thead>               
+                <tbody>
+                    {photo_rows}
+                </tbody>
+            </table>
     </section>
 
     
@@ -211,6 +96,7 @@ html_template = '''<!DOCTYPE html>
             <thead>
                 <tr>
                     <th>Place</th>
+                    <th>Profile Picture</th>
                     <th>Name</th>
                     <th>Time</th>
                     <th>Grade</th>
@@ -222,8 +108,32 @@ html_template = '''<!DOCTYPE html>
             </tbody>
         </table>
     </section>
+
 </body>
 </html>
+'''
+
+
+html_images = '''<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Meet Photos</title>
+       
+    </head>
+    <body>
+        <header>
+            <h1>{meet_title}</h1>
+        </header>   
+        <section id="photo-table">
+                <h2>All Photos</h2>
+                {photo_list}
+        </section>
+    </body>
+
+    </html>
+
+            
 '''
 
 import csv
@@ -263,18 +173,21 @@ def generate_html_from_csv(csv_file, output_file):
             athlete_link = athlete[3]   # Column G - athlete-link
             athlete_time = athlete[4]  # Column H - athlete-time
             athlete_team = athlete[5]  # Column H - athlete-team
-            # athlete_image = athlete[7]  # Column I - athlete-image
-            # athlete_feedback = athlete[9]  # Column J - athlete-feedback
+            athlete_image = athlete[7]
             
+            if not os.path.exists(f"AthleteImages/{athlete_image}"):
+                athlete_image ="blankPic.webp"
+                       
             # Format the row for each athlete
             athlete_rows += f'''
                 <tr>
                     <td>{athlete_place}</td>
+                    <td><img src="AthleteImages/{athlete_image}" alt="{athlete_name}" style="width: 60px; height: auto;"></td>  
                     <td><a href="{athlete_link}">{athlete_name}</a></td>
                     <td>{athlete_time}</td>
                     <td>{athlete_grade}</td>
                     <td>{athlete_team}</td>
-                
+                    
                 </tr>
             '''
         
@@ -334,12 +247,50 @@ for filename in os.listdir('athletes/womens_team'):
                     <td>{data[5][0]}</td>
                 </tr>
             '''
-        
+
+def make_photo_page(output_name, photolist, folder):
+    html_photo_content = html_images.format(
+        meet_title=folder,
+        photo_list = photolist
+    )
+    # Write the HTML content to a file
+    with open(output_name, 'w', encoding='utf-8') as output:
+        output.write(html_photo_content)
+
+photo_rows = ""
+video_extensions = ['.mov', '.mp4', '.webm', '.ogg']
+photo_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+
+for folder in os.listdir('images'):
+    folder_path = os.path.join('images', folder)
+    if os.path.isdir(folder_path):
+        output_name = folder + '.html'
+        photo_rows += f'''
+                        <tr>
+                            <td><a href="{output_name}">{folder}</a></td>
+                        </tr>'''
+        photolist = ""
+        for photo in os.listdir(folder_path):
+            file_path = os.path.join('images', folder, photo)
+            file_ext = os.path.splitext(photo)[1].lower()
+            file_name = os.path.splitext(photo)[0].lower()
+            # if video
+            if file_ext in video_extensions:
+                photolist += f'''
+                <video controls>
+                    <source src="{file_path}" type="video/{file_ext[1:]}">
+                    Your browser does not support the video tag.
+                </video>\n'''
+            # image
+            elif file_ext in photo_extensions:
+                photolist += f'<img src="{file_path}" alt="picture of {file_name} from {folder}" style="width: 60px; height: auto;">\n'
+        make_photo_page(output_name, photolist, folder)
 
 html_main_content = html_main.format(
     meet_rows=meet_rows,
     womens_rows=womens_rows,
-    mens_rows=mens_rows
+    mens_rows=mens_rows,
+    photo_rows=photo_rows
 )
 
 with open(main_file, 'w', encoding='utf-8') as output:
@@ -348,4 +299,3 @@ with open(main_file, 'w', encoding='utf-8') as output:
         
 
 # Generate the HTML file from the CSV data
->>>>>>> fc4be1a0f7dfee9c8fdf910e20618c75cb5ed615
