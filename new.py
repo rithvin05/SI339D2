@@ -283,7 +283,7 @@ for folder in os.listdir('images'):
                 </video>\n'''
             # image
             elif file_ext in photo_extensions:
-                photolist += f'<img src="{file_path}" alt="picture of {file_name} from {folder}" style="width: 60px; height: auto;">\n'
+                photolist += f'<img src="{file_path}" alt="{file_name} from {folder}" style="width: 60px; height: auto;">\n'
         make_photo_page(output_name, photolist, folder)
 
 html_main_content = html_main.format(
